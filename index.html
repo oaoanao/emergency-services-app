@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Emergency Services Locator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    p {
+      margin-bottom: 20px;
+    }
+
+    .button-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      max-width: 600px;
+      margin: auto;
+    }
+
+    button {
+      padding: 15px;
+      font-size: 18px;
+      border-radius: 10px;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .log-output {
+      margin-top: 30px;
+      text-align: left;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .log-output pre {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Emergency Services Locator</h1>
+  <p>Tap a button to find the nearest service based on your location:</p>
+
+  <div class="button-container">
+    <button onclick="handleServiceClick('ambulance')">🚑 Ambulance</button>
+    <button onclick="handleServiceClick('police station')">👮 Police Station</button>
+    <button onclick="handleServiceClick('hospital')">🏥 Hospital</button>
+    <button onclick="handleServiceClick('rescue squad')">🚒 Rescue Squad</button>
+  </div>
+
+  <div class="log-output" id="log">
+    <h2>Search Log</h2>
+    <pre id="logText">No searches yet.</pre>
+  </div>
+
+  <script>
+    const logText = document.getElementById('logText');
+
+    let queuedServiceType = null;
+
+    function handleServiceClick(serviceType) {
+      // Store the service type for later use
+      queuedServiceType = serviceType;
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          handleLocationSuccess,
+          function (error) {
+            alert("Location access failed: " + error.message);
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+          }
+        );
+      } else {
+        alert("Geolocation is not supported by this device.");
+      }
+    }
+
+    function handleLocationSuccess(position) {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+      const timestamp = new Date().toLocaleString();
+      const query = encodeURIComponent(queuedServiceType);
+      const url = `https://www.google.com/maps/search/${query}/@${lat},${lon},15z`;
+
+      // Open in same tab to improve mobile compatibility
+      window.location.href = url;
+
+      const logEntry = `[${timestamp}] Searched for: ${queuedServiceType}\nLocation: Latitude ${lat.toFixed(5)}, Longitude ${lon.toFixed(5)}\nURL: ${url}\n\n`;
+      appendToLog(logEntry);
+    }
+
+    function appendToLog(entry) {
+      if (logText.textContent === 'No searches yet.') {
+        logText.textContent = '';
+      }
+      logText.textContent += entry;
+    }
+  </script>
+</body>
+
+</html>
